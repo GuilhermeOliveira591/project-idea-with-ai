@@ -1,0 +1,25 @@
+Agora vamos abordar outro caso. Neste momento, vocês já podem ter um CLAUDE.md, um CODECS.md, um AGENTS.md — não importa qual arquivo — e esse arquivo pode estar bem diferente das recomendações que dei. O que fazer, principalmente se ele estiver muito grande?
+
+Tenho um prompt que criei ao longo do tempo, baseado em diversos outros prompts também. A ideia, no final das contas, é separar o que não deveria estar no seu CLAUDE.md, por exemplo, e que deveria estar em outro local, mas ao mesmo tempo tentar simplificar ao máximo o seu arquivo de inicialização.
+
+Quais são os passos e o raciocínio por trás disso? Como o prompt você mesmo pode ajustar, criar, brincar para ver qual é o melhor resultado que vai conseguir extrair, vou compartilhar uma dica que vale para tudo sempre: toda vez que a IA fizer qualquer trabalho crítico, ou mesmo quando você gerou uma documentação ou qualquer instrução, a primeira coisa que recomendo é validar isso. Como você valida? Busque por contradições, busque por conflitos. Peça para a IA identificar onde há problemas, onde uma instrução contradiz a outra.
+
+Primeiro ponto nesse arquivo: você vai pedir para detectar qualquer tipo de conflito. Depois, vamos extrair somente fatos e aspectos extremamente importantes que fazem parte do core das decisões da sua aplicação. Todo o restante que separarmos, vamos criar arquivos para fazer aquela linkagem lá no final, porque você pode instruir isso para a IA. Agora, tem um ponto importante: sempre vamos criar alguns gatilhos, alguns triggers para fazer com que a IA carregue aqueles arquivos conforme ela for precisando.
+
+Por outro lado, hoje em dia temos Skills, e as Skills fazem exatamente isso. Então, eventualmente, esses arquivos ou os conteúdos desses arquivos você pode criar, colocar ou atualizar nas suas Skills. Outro ponto: faça com que conceitos muito, mas muito importantes mesmo, se tornem decisões, regras muito claras para a IA. Por que estou dizendo? Utilizar boas práticas de desenvolvimento do meu software — todas essas coisas extremamente vagas não vão fazer sentido algum e só vão encher linguagem no meio de toda essa história. Então, o que você faz? Você vai fazer com que isso se torne pontos concretos para que a IA tome as decisões.
+
+E como você vai fazer isso? Provocando o agente. Pergunte para o agente fazer o raciocínio ele mesmo: quando devo usar isso? Por que isso aqui vai fazer sentido para eu trabalhar? O que isso, na realidade, vai fazer diferença para a minha aplicação? Quando você coloca o agente para refletir nisso, você faz com que instruções vagas se tornem regras do seu sistema.
+
+Por último, você vai pedir para a IA atualizar o seu arquivo .md e gerar os novos arquivos. Assim que ela gerar os novos arquivos, a linkagem vai estar feita. Mas aí que é o grande ponto: revise esses arquivos gerados. Pode parecer bobeira, mas lembre-se, esses arquivos vão mostrar qual é o comportamento da IA ao longo da sua aplicação.
+
+Outra coisa importante: verifique sempre se o seu arquivo de inicialização não ficou muito, mas muito pequeno também. A ideia é que ele seja pequeno, que seja muito claro, muito breve, mas também você não vai querer um arquivo muito minimalista que perca informações que vão ajudar o tempo todo. Novamente, ao longo do tempo, nunca vi um arquivo desses tão parecido um com o outro. Mas quando você coloca esses conceitos em prática, é um bom ponto de partida.
+
+Vou dar um exemplo: o arquivo que mostrei para vocês, eventualmente, muita gente que poderia olhar falaria: "Wesley, eu jamais colocaria aqueles exemplos de código ali no meu arquivo .md." Eu posso falar que eventualmente faz todo sentido você não colocar. Por exemplo, naquele projeto especificamente, eu não tinha uma skill criada e naquele momento, para mim, fazia sentido aquela informação estar no meu arquivo .md, principalmente porque durante o desenvolvimento do projeto, aquela informação era importante. Mas ao longo do tempo, esse arquivo vai tender a querer ficar grande. Então, você vai separando essas responsabilidades, jogando isso em outros arquivos, jogando isso em outras skills, para que ao longo do tempo esse arquivo se mantenha sustentável, mas também que ele faça diferença.
+
+Se tem algo que é muito comum e que está dando erro o tempo inteiro, e ela não está conseguindo pegar, eventualmente vai valer a pena, pelo menos naquele momento do projeto, ou enquanto o modelo não melhorar, enquanto as skills que você vai criando ao longo do tempo não melhorarem, vale a pena, com certeza, você manter nesse arquivo de inicialização.
+
+Aqui está um exemplo de prompt para que você consiga utilizar como referência. Você pode utilizar esse prompt, pode criar um prompt parecido para que ele gere mais informação, menos informação, mas a ideia está aí no final das contas: separar o que é importante, jogar o resto em outros arquivos e fazer essa linkagem tentando deixar as coisas mais concretas possíveis.
+
+Espero que você tenha gostado. Utilize e faça esse teste desse prompt na sua aplicação, que pode ter um arquivo gigante de inicialização e, eventualmente, você vai ficar bem surpreso. Um grande abraço e é isso aí!
+
+ 

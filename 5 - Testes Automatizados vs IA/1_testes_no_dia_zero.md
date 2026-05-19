@@ -1,0 +1,9 @@
+# Testes no dia ZERO
+
+No capítulo anterior falamos sobre quando começamos um projeto do zero, mas uma das coisas que enfrentamos no dia a dia são os **testes automatizados**. O ponto importante é: se você trabalha com desenvolvimento, parto do princípio que você trabalha com testes automatizados. E se trabalha com testes automatizados, você deve saber que, **no dia zero**, você precisa ter o seu *framework* de teste operacional. O que quero dizer com isso? No dia zero, quando você começar a desenvolver com a IA, ela precisa estar preparada para criar testes para você.
+
+O grande problema é que muita gente negligencia essa parte, por quê? Porque já pensa que a IA é muito boa para criar testes. E ela é, **desde que saiba o quê, como, quando, em quais situações criar os nossos testes**. Digo isso porque já caí em muitas pegadinhas. Já criei e já fiz muitos testes nos quais não informei nada para a IA sobre testes, ou coloquei informações parciais, ou fui mais granular ou menos granular. Cheguei em momentos onde pedi para a IA criar alguns testes de *front-end* e ela criou *dois mil testes*. Ou chegou em momentos onde ela criou *dez testes*. **Como dosar isso?**
+
+É importante lembrar que cada empresa tem uma forma de testar software. Cada empresa tem um nível de rigidez para testar software. Provavelmente, uma empresa que está fazendo projetos mais simples não vai ter um nível tão forte quanto um banco, por exemplo, que trabalha com testes de software com maior rigor. Também existe a questão do que testar, quando testar, o que fazer. Muitas vezes, empresas têm equipe de *QA*, então depende muito.
+
+O fato é que quando vamos trabalhar com testes de software, **a IA precisa estar preparada e instruída para isso**. Isso vai depender de empresa para empresa, desenvolvedor para desenvolvedor. Quero trazer os pontos de atenção para que você consiga estar preparado para isso.

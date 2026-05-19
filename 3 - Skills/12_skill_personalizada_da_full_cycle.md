@@ -1,0 +1,17 @@
+# Skill Personalizada da Full Cycle
+
+Ainda falando sobre Skills, eu quero mostrar um outro exemplo prático, mas de uma situação real aqui da **FullCycle**. Aqui na FullCycle, a gente tem uma plataforma do aluno e essa plataforma, provavelmente onde você deve estar assistindo este vídeo, possui várias regras de design. Então, existem cores, botões, padrões, sombras, logo e todos esses tipos de elementos que a área de front-end já está muito acostumada a trabalhar por meio de um *design system*, com um guia bem organizado para criar interfaces de forma mais simples.
+
+Hoje em dia, a gente utiliza, inclusive, o **Figma**, e é possível conectar com um servidor MCP do Figma para trazer as cores e permitir que a IA consiga criar interfaces de front-end quase *pixel perfect*. Porém, se você tiver uma skill para ajudar nesse processo, isso pode acelerar ainda mais o desenvolvimento. Então, é exatamente isso que eu quero mostrar, porque se trata de uma skill personalizada que existe aqui na empresa.
+
+Então, o que isso significa? Aqui, por exemplo, temos o *front matter*, que é a descrição e a forma de "vender" essa skill para a IA. Ele descreve um *design system* com diretrizes visuais para a plataforma Full Cycle Learning, incluindo tokens, cores, tipografia, espaçamento, bordas, componentes, padrões e layouts de página, de forma independente de framework. Você utiliza essa skill quando precisa criar ou modificar interfaces da área do aluno, implementar novos componentes ou revisar o front-end para garantir consistência visual.
+
+Outro ponto importante são as **keywords**, que ajudam a chamar a atenção da IA para o contexto correto. Palavras como *Design System, Component, Layout, Dark Theme* e *Student Area* aumentam a chance de a skill ser acionada automaticamente. Ou seja, esse conjunto de palavras funciona como um gatilho adicional dentro do front matter, reforçando quando aquela skill deve ser utilizada.
+
+A partir daí, o conteúdo da skill começa a se aprofundar. Ela traz informações sobre identidade visual, *branding*, tom da marca e até o logotipo da empresa em formato `SVG`, armazenado dentro da pasta de `assets`. Isso permite que a IA tenha acesso direto aos elementos visuais oficiais da plataforma e utilize esses recursos corretamente ao gerar interfaces ou componentes.
+
+Depois disso, entram os **design tokens**, com tabelas detalhadas de cores, usos de background, tipografia, espaçamento, bordas e estados visuais. Também existem regras específicas sobre como utilizar cada elemento, quais padrões seguir e em quais contextos cada componente deve ser aplicado. Esse nível de detalhe transforma a skill em um guia completo para manter consistência visual no desenvolvimento da interface.
+
+Além disso, a skill inclui referências visuais e *screenshots* de páginas reais da plataforma, como tela de login, área do estudante, módulos e trilhas de aprendizagem. Essas imagens funcionam como base para a IA compreender o layout e o comportamento esperado das telas. Em alguns casos, também são incluídos identificadores do Figma, permitindo que a IA consulte diretamente o design original por meio de um servidor MCP.
+
+Ou seja, a estrutura segue uma lógica clara: **existe um resumo principal no arquivo `skill.md`, e todo o conteúdo mais detalhado fica nas referências**. Isso mantém a skill leve para carregar, mas ainda permite acesso a informações profundas quando necessário. Dessa forma, a IA consegue entender rapidamente a identidade visual da plataforma e aplicar corretamente os padrões definidos.

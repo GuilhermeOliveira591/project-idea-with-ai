@@ -1,0 +1,9 @@
+No vídeo anterior falei sobre muitas coisas básicas que acabam não sendo necessariamente fáceis, mas também não são simples, e muitas vezes ignoramos. Para começarmos do começo, a primeira coisa que não podemos subestimar é a inteligência da IA. Por quê? Porque o agente precisa, importantemente, saber instalar o ambiente de desenvolvimento pela primeira vez, precisa reconhecer se o ambiente já está em funcionamento e também precisa conseguir resetar ou desinstalar o ambiente.
+
+Pode parecer bobeira o que estou falando, mas essa bobeira faz uma diferença enorme em relação à economia de tokens, à velocidade e, com certeza, muito mais consistência da inteligência artificial ao longo do tempo. Quais são as etapas básicas para desenvolver qualquer aplicação? Primeiro, inicialização, para iniciar o ambiente. Segundo, state, onde ela precisa saber qual é o estado atual do ambiente. Terceiro, ela precisará ter clareza no que vai desenvolver, não dependendo apenas de um bom prompt. E também a parte de testabilidade e feedback.
+
+Os pontos principais que vamos ver agora são as partes 1 e 2 em relação ao ambiente. Por incrível que pareça, muita gente peca nisso. Na realidade, atualmente, pelo menos no momento em que estou gravando este vídeo, quase todos os desenvolvedores que conheço acabam ignorando ou não fazendo essa parte bem feita, gastando muito tempo e, às vezes, se frustrando bastante com a IA.
+
+No próximo vídeo, vou mostrar para vocês apenas para seguirmos uma linha de raciocínio. Não digo para duvidarem de mim, mas para que possamos sentir na pele o que estou querendo dizer em relação a essas etapas básicas de inicialização, state e tudo mais. Vamos organizar porque vamos para a IDE, e quero que vocês sintam na pele junto comigo. Eventualmente, é isso que vocês estão sentindo o dia todo quando programam com inteligência artificial. 
+
+ 

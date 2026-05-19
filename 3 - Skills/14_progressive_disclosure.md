@@ -1,0 +1,21 @@
+# Progressive disclosure
+
+Ainda falando sobre Skills, você vai perceber que isso também se relaciona com outros aspectos importantes quando estamos trabalhando com desenvolvimento com IA, especialmente com algo chamado **Progressive Disclosure**. O que isso significa, no final das contas? Basicamente, é o modelo ou agente começar a ler os arquivos conforme precisa, em vez de ler tudo de uma vez. Essa é a principal essência por trás das skills.
+
+Muito desse conceito também pode ser aplicado em arquivos como `agents.md` e `cloud.md`, mas isso será abordado em um momento específico. Quando falamos sobre *Progressive Disclosure Patterns*, a documentação da Anthropic é bastante clara ao definir **três padrões principais** para organizar a forma como você cria suas skills. Esses padrões ajudam a estruturar o conteúdo e a controlar melhor o consumo de tokens durante a execução.
+
+O primeiro padrão é chamado de **High-Level Guide com Referências**. Isso significa que você possui um arquivo principal, geralmente o `skill.md`, que apresenta uma visão geral do conteúdo. Dentro desse arquivo, você pode ter seções indicando, por exemplo: para layout de página, consulte um arquivo específico; para estados ou modelos, consulte outro documento. Assim, a skill fornece uma visão geral, e o agente aprofunda a leitura apenas quando necessário.
+
+A grande vantagem dessa abordagem é que a skill possui um mecanismo estruturado para controlar o fluxo de leitura. Inicialmente, o sistema carrega apenas o *front matter*, que contém uma descrição resumida. Quando a skill é acionada, o agente passa a ler apenas as partes relevantes, aprofundando-se conforme a necessidade. Esse comportamento evita o carregamento desnecessário de informações e torna o processo mais eficiente.
+
+Por outro lado, existem cenários em que uma skill precisa lidar com conteúdos de múltiplos domínios. Nesse caso, a estrutura muda um pouco. Por exemplo, em uma skill chamada *Full Cycle Domain Rules*, o arquivo principal funciona como um índice ou referência central. Ele aponta para diferentes áreas do sistema, como faturamento, CRM, certificados de estudantes e vendas, direcionando o agente para os documentos corretos conforme o contexto da tarefa.
+
+Uma técnica interessante nesse modelo é incluir *pseudocódigo* ou comandos que ajudem o agente a localizar rapidamente as informações necessárias. Por exemplo, você pode indicar um comando de busca para encontrar todos os arquivos relacionados a faturamento dentro da plataforma. Isso facilita a navegação e reduz a necessidade de múltiplas chamadas de leitura, tornando o acesso às informações mais direto e eficiente.
+
+É importante manter equilíbrio ao utilizar esse tipo de estratégia. Se a skill for construída apenas com lógica condicional ou comandos técnicos, ela pode perder a clareza da linguagem natural e se tornar difícil de manter. O objetivo é combinar instruções estruturadas com descrições compreensíveis, permitindo que o agente interprete o contexto de forma adequada sem transformar a skill em um código procedural disfarçado.
+
+Outro ponto relevante é que essa estrutura permite **reutilização**. Uma skill baseada em domínios pode ser aplicada em diferentes projetos ou contextos dentro da mesma organização. Além disso, o conceito de domínio não se limita apenas às regras de negócio. Ele também pode representar diferentes módulos do sistema, áreas funcionais ou partes independentes de um *monorepositório*.
+
+Essa abordagem também ajuda a reduzir o consumo de tokens. Quando a skill direciona o agente diretamente para os documentos relevantes, evita-se a leitura de arquivos desnecessários e o uso excessivo de ferramentas. Em vez de executar várias operações sequenciais, como listar arquivos, abrir conteúdos e realizar buscas repetidas, o agente pode acessar rapidamente o conjunto de informações correto.
+
+Portanto, **criar uma skill não se resume apenas a escrever um arquivo `skill.md` com instruções**. Existe uma estratégia por trás da organização do conteúdo, da divisão por domínios e da forma como as referências são estruturadas. Esses detalhes fazem diferença direta na eficiência do sistema e na qualidade das respostas geradas pelo agente.
