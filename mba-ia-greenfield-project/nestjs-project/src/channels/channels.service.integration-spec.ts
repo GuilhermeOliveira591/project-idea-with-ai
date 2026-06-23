@@ -89,4 +89,28 @@ describe('ChannelsService (integration)', () => {
       expect(channels).toHaveLength(2);
     });
   });
+
+  describe('findById', () => {
+    it('returns the channel when it exists', async () => {
+      const user = await createUser();
+      const created = await channelsService.createChannel(
+        user.id,
+        'lookup@example.com',
+      );
+
+      const found = await channelsService.findById(created.id);
+
+      expect(found).not.toBeNull();
+      expect(found!.id).toBe(created.id);
+      expect(found!.user_id).toBe(user.id);
+    });
+
+    it('returns null when the channel does not exist', async () => {
+      const found = await channelsService.findById(
+        '00000000-0000-4000-8000-000000000000',
+      );
+
+      expect(found).toBeNull();
+    });
+  });
 });

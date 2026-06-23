@@ -1,6 +1,9 @@
 import { ArgumentsHost } from '@nestjs/common';
 import { DomainExceptionFilter } from './domain-exception.filter';
 import {
+  AlreadySubscribedException,
+  CannotSubscribeToOwnChannelException,
+  ChannelNotFoundException,
   EmailAlreadyExistsException,
   EmailNotConfirmedException,
   InvalidCredentialsException,
@@ -95,6 +98,39 @@ describe('DomainExceptionFilter', () => {
     expect(mockJson).toHaveBeenCalledWith({
       statusCode: 401,
       error: 'TOKEN_REUSE_DETECTED',
+      message: expect.any(String),
+    });
+  });
+
+  it('maps ChannelNotFoundException to 404 with CHANNEL_NOT_FOUND', () => {
+    filter.catch(new ChannelNotFoundException(), mockHost);
+
+    expect(mockStatus).toHaveBeenCalledWith(404);
+    expect(mockJson).toHaveBeenCalledWith({
+      statusCode: 404,
+      error: 'CHANNEL_NOT_FOUND',
+      message: expect.any(String),
+    });
+  });
+
+  it('maps AlreadySubscribedException to 409 with ALREADY_SUBSCRIBED', () => {
+    filter.catch(new AlreadySubscribedException(), mockHost);
+
+    expect(mockStatus).toHaveBeenCalledWith(409);
+    expect(mockJson).toHaveBeenCalledWith({
+      statusCode: 409,
+      error: 'ALREADY_SUBSCRIBED',
+      message: expect.any(String),
+    });
+  });
+
+  it('maps CannotSubscribeToOwnChannelException to 409 with CANNOT_SUBSCRIBE_TO_OWN_CHANNEL', () => {
+    filter.catch(new CannotSubscribeToOwnChannelException(), mockHost);
+
+    expect(mockStatus).toHaveBeenCalledWith(409);
+    expect(mockJson).toHaveBeenCalledWith({
+      statusCode: 409,
+      error: 'CANNOT_SUBSCRIBE_TO_OWN_CHANNEL',
       message: expect.any(String),
     });
   });

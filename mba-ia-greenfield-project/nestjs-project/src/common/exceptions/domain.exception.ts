@@ -48,3 +48,25 @@ export class TokenReuseDetectedException extends DomainException {
     );
   }
 }
+
+export class ChannelNotFoundException extends DomainException {
+  constructor() {
+    super('CHANNEL_NOT_FOUND', 404, 'Channel not found');
+  }
+}
+
+export class AlreadySubscribedException extends DomainException {
+  constructor() {
+    super('ALREADY_SUBSCRIBED', 409, 'Already subscribed to this channel');
+  }
+}
+
+export class CannotSubscribeToOwnChannelException extends DomainException {
+  constructor() {
+    super(
+      'CANNOT_SUBSCRIBE_TO_OWN_CHANNEL',
+      409,
+      'Cannot subscribe to your own channel',
+    );
+  }
+}
