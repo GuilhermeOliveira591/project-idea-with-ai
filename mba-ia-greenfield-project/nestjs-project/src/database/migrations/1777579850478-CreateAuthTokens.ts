@@ -5,6 +5,9 @@ export class CreateAuthTokens1777579850478 implements MigrationInterface {
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
+      `CREATE TYPE "public"."verification_tokens_type_enum" AS ENUM('email_confirmation', 'password_reset')`,
+    );
+    await queryRunner.query(
       `CREATE TABLE "verification_tokens" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "token_hash" character varying NOT NULL, "type" "public"."verification_tokens_type_enum" NOT NULL, "user_id" uuid NOT NULL, "expires_at" TIMESTAMP NOT NULL, "used_at" TIMESTAMP, "created_at" TIMESTAMP NOT NULL DEFAULT now(), CONSTRAINT "PK_f2d4d7a2aa57ef199e61567db22" PRIMARY KEY ("id"))`,
     );
     await queryRunner.query(
