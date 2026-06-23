@@ -1,7 +1,7 @@
 # Phase 06 — Inscrição em Canais — Progress
 
 **Status:** in_progress
-**SIs:** 2/5 completed
+**SIs:** 3/5 completed
 
 ### SI-06.1 — Subscription Entity and Migration
 - **Status:** completed
@@ -14,9 +14,9 @@
 - **Observations:** `findById` uses `dataSource.getRepository(Channel)` to avoid changing the `ChannelsService` constructor (would ripple into existing specs).
 
 ### SI-06.3 — SubscriptionsService: Subscribe and Unsubscribe
-- **Status:** pending
-- **Tests:** —
-- **Observations:** —
+- **Status:** completed
+- **Tests:** `subscriptions.service.spec.ts` (unit: subscribe 404/own/dup/happy, unsubscribe 404/idempotent) and `subscriptions.service.integration-spec.ts` (subscribe + unsubscribe over real Postgres) — 12 passed.
+- **Observations:** Unique-violation race fallback re-thrown as `AlreadySubscribedException`. Unsubscribe deletes idempotently after a 404 channel check.
 
 ### SI-06.4 — SubscriptionsService: List and Subscriber Count
 - **Status:** pending
