@@ -1,10 +1,6 @@
-# Spec-Driven Development com IA: Fechando uma Phase de um Projeto Real
+# Spec-Driven Development com IA
 
 ## Descrição
-
-Sexta-feira, 17h47. Você está fechando o notebook quando uma mensagem cai do **Tech Lead da StreamTube**:
-
-> *"Fala! Tô precisando de uma força. O dev que tava no projeto saiu e deixou a feature de **Reações** pela metade. Vídeo sem reação não engaja, e marketing tá em cima. Você consegue fechar a **Phase 03** até segunda? Mas faz **direito**, viu? Já fechamos as Phases 01 (config base) e 02 (auth) seguindo o processo do MBA — não me faça quebrar a cadência agora. Confio no processo que você aprendeu."*
 
 A **StreamTube** é uma plataforma de streaming de vídeo. Usuários têm canais, autenticam, e agora precisam conseguir **reagir aos vídeos** (`like, love, laugh, sad, angry`) com contagem agregada por tipo.
 
@@ -46,9 +42,9 @@ Você deve entregar, em um repositório público no GitHub (fork do repositório
 - Módulo NestJS `reactions/` implementado via TDD, com cada commit e cada teste referenciando os IDs da spec
 - Migration TypeORM criando a tabela `reactions`
 - **Skill nova `phase-audit`** que lê o repositório e gera um relatório de integridade do processo
-- Relatório de integridade do processo gerado pela skill (`phase-03-reactions.progress.md`) com **Integrity Score ≥ 80%**
+- Relatório de integridade do processo gerado pela skill (`phase-06-reactions.progress.md`) com **Integrity Score ≥ 80%**
 - `CLAUDE.md` raiz e `nestjs-project/CLAUDE.md` atualizados com a seção de Reactions
-- Sessão de Claude arquivada em `_claude-sessions/11-fase03-reactions.txt`
+- Sessão de Claude arquivada em `_claude-sessions/11-fase06-reactions.txt`
 
 Toda informação registrada nos documentos deve ser rastreável à spec ou ao código. Não é permitido inventar requisitos, decisões ou testes sem origem identificável por ID.
 
@@ -92,7 +88,7 @@ A skill que **você vai criar** é a `phase-audit` — ela não duplica nenhuma 
 
 ### 1. Spec rastreável da Phase 03
 
-Produza `docs/phases/phase-03-reactions.md` espelhando o padrão de `phase-02-auth.md`. **Use a skill `research`** para mapear o código existente antes de escrever a spec — é ela que vai te dar o vocabulário do domínio e os pontos de integração.
+Produza `docs/phases/phase-06-reactions.md` espelhando o padrão de `phase-02-auth.md`. **Use a skill `research`** para mapear o código existente antes de escrever a spec — é ela que vai te dar o vocabulário do domínio e os pontos de integração.
 
 A spec deve cobrir, no mínimo:
 
@@ -110,7 +106,7 @@ A spec deve cobrir, no mínimo:
 
 ### 2. Plano de execução técnico
 
-Invoque a skill `plan-phase` passando a spec como input. O resultado deve ser salvo em `docs/phases/phase-03-reactions.plan.md`.
+Invoque a skill `plan-phase` passando a spec como input. O resultado deve ser salvo em `docs/phases/phase-06-reactions.plan.md`.
 
 O plano deve:
 
@@ -183,7 +179,7 @@ Crie a skill em `.claude/skills/phase-audit/skill.md` (raiz do projeto base, nã
 A skill deve ser invocável por:
 
 ```bash
-claude "/phase-audit phase-03-reactions"
+claude "/phase-audit phase-06-reactions"
 ```
 
 E deve **ler 5 fontes** do repositório e cruzá-las:
@@ -239,7 +235,7 @@ Score = (
 - Frontmatter completo (`name`, `description`, `keywords`) — sem isso a skill não carrega
 - Skill agnóstica do nome da phase — deve funcionar para Phase 02, 03, 04 etc., recebendo o nome como argumento
 - Não modificar nenhum arquivo do código — a skill é **somente leitura** sobre o repo, apenas escreve o `progress.md`
-- Skill < 150 linhas no `skill.md` (use arquivos de referência se precisar de mais)
+- Arquivo `skill.md` (use arquivos de referência se precisar de mais)
 - Detectar IDs via regex robusto (`\[(FR|RN|EC|PLAN|UC)-\d{2}\]`)
 
 > **Dica:** o `skill.md` é um prompt, não um programa. Não tente escrever lógica condicional complexa — descreva o que o agente deve fazer e em que ordem, e deixe arquivos de referência fornecerem os templates e regex.
@@ -249,10 +245,10 @@ Score = (
 Depois de implementar o módulo, rode a skill:
 
 ```bash
-claude "/phase-audit phase-03-reactions"
+claude "/phase-audit phase-06-reactions"
 ```
 
-A skill vai gerar `docs/phases/phase-03-reactions.progress.md`. **Se o Integrity Score estiver abaixo de 80%, corrija os gaps e rode de novo.** É esperado iterar 2-3 vezes. Commits de correção também devem ter ID.
+A skill vai gerar `docs/phases/phase-06-reactions.progress.md`. **Se o Integrity Score estiver abaixo de 80%, corrija os gaps e rode de novo.** É esperado iterar 2-3 vezes. Commits de correção também devem ter ID.
 
 A versão final do `progress.md` (commitada no repo) é o relatório que será avaliado.
 
@@ -265,9 +261,9 @@ Atualize `CLAUDE.md` (raiz) e `nestjs-project/CLAUDE.md` adicionando a seção d
 - Endpoints: POST /videos/:id/reactions, DELETE /videos/:id/reactions
 - Tipos: like, love, laugh, sad, angry
 - Regras: 1 reação por (user, video); banidos bloqueados; reagir novamente substitui
-- Spec: docs/phases/phase-03-reactions.md
-- Plano: docs/phases/phase-03-reactions.plan.md
-- Audit: docs/phases/phase-03-reactions.progress.md
+- Spec: docs/phases/phase-06-reactions.md
+- Plano: docs/phases/phase-06-reactions.plan.md
+- Audit: docs/phases/phase-06-reactions.progress.md
 - Testes: src/reactions/**/*.spec.ts + test/reactions.e2e-spec.ts
 ```
 
@@ -275,20 +271,20 @@ Atualize `CLAUDE.md` (raiz) e `nestjs-project/CLAUDE.md` adicionando a seção d
 
 ### 7. Sessão arquivada
 
-Exporte a sessão principal de Claude Code usada no desafio para `_claude-sessions/11-fase03-reactions.txt`. Não precisa editar — bruto serve. Esse arquivo é evidência secundária; usado pelo avaliador apenas em caso de inconsistência detectada entre o repo e o relatório.
+Exporte a sessão principal de Claude Code usada no desafio para `_claude-sessions/11-fase06-reactions.txt`. Não precisa editar — bruto serve. Esse arquivo é evidência secundária; usado pelo avaliador apenas em caso de inconsistência detectada entre o repo e o relatório.
 
 ## Critérios de Aceite
 
 Todos os itens abaixo são obrigatórios.
 
-### Spec (`docs/phases/phase-03-reactions.md`)
+### Spec (`docs/phases/phase-06-reactions.md`)
 
 - [ ] Arquivo existe e segue o padrão de `phase-02-auth.md`
 - [ ] Contém no mínimo 6 FR, 4 RN e 5 EC, todos com ID no formato `XX-NN`
 - [ ] Critérios de aceite são testáveis e amarrados a IDs de FR
 - [ ] Tipos de reação cobertos: `like, love, laugh, sad, angry`
 
-### Plano (`docs/phases/phase-03-reactions.plan.md`)
+### Plano (`docs/phases/phase-06-reactions.plan.md`)
 
 - [ ] Gerado a partir da skill `plan-phase`
 - [ ] Cada item tem ID `PLAN-NN` e referencia pelo menos um ID da spec
@@ -311,14 +307,14 @@ Todos os itens abaixo são obrigatórios.
 ### Skill `phase-audit` (`.claude/skills/phase-audit/skill.md`)
 
 - [ ] Existe com frontmatter completo (name, description, keywords)
-- [ ] `skill.md` < 150 linhas
+- [ ] `skill.md`
 - [ ] Recebe nome da phase como argumento (funciona pra qualquer phase)
 - [ ] Lê as 5 fontes (spec, plan, commits, testes, código)
 - [ ] Gera o `progress.md` no formato definido no requisito 4
 - [ ] Calcula o Integrity Score conforme a fórmula
 - [ ] Não modifica código (somente leitura sobre o repo)
 
-### Process Integrity Report (`docs/phases/phase-03-reactions.progress.md`)
+### Process Integrity Report (`docs/phases/phase-06-reactions.progress.md`)
 
 - [ ] Gerado pela skill (não escrito à mão)
 - [ ] Integrity Score ≥ 80%
@@ -333,7 +329,7 @@ Todos os itens abaixo são obrigatórios.
 
 ### Sessão arquivada
 
-- [ ] `_claude-sessions/11-fase03-reactions.txt` presente
+- [ ] `_claude-sessions/11-fase06-reactions.txt` presente
 
 ## Estrutura obrigatória do entregável
 
@@ -347,12 +343,12 @@ mba-ia-greenfield-project/
 │           ├── skill.md
 │           └── (arquivos de referência, se precisar)
 ├── _claude-sessions/
-│   └── 11-fase03-reactions.txt                       ← export bruto
+│   └── 11-fase06-reactions.txt                       ← export bruto
 ├── docs/
 │   └── phases/
-│       ├── phase-03-reactions.md                     ← spec (você escreve, guiado pela research)
-│       ├── phase-03-reactions.plan.md                ← output de /plan-phase
-│       └── phase-03-reactions.progress.md            ← output de /phase-audit
+│       ├── phase-06-reactions.md                     ← spec (você escreve, guiado pela research)
+│       ├── phase-06-reactions.plan.md                ← output de /plan-phase
+│       └── phase-06-reactions.progress.md            ← output de /phase-audit
 ├── nestjs-project/
 │   ├── CLAUDE.md                                     ← atualizado
 │   ├── src/
@@ -390,33 +386,6 @@ O repositório já contém:
 - Skills `research`, `plan-phase`, `implement-phase`, `generate-test-guide`, `testing-guide-nestjs-project`, `nestjs-best-practices`, `typeorm` — todas em `.claude/skills/`
 - `compose.yaml` com Postgres pronto pra subir
 
-## Ordem de execução sugerida
-
-**Esforço estimado: 3 dias (~12–15h)**
-
-### Dia 1 — Spec + Skill (≈ 5h)
-
-1. **Setup e exploração:** rode o projeto base local, suba o compose, abra o módulo `auth/` (e secundariamente `channels/`) e leia. Entenda o padrão antes de qualquer coisa.
-2. **Research:** invoque a skill `research` apontando para o domínio de Reactions. Use o output como insumo da spec.
-3. **Spec:** escreva `docs/phases/phase-03-reactions.md` com todos os IDs estáveis. **Esse documento é a base de tudo** — invista nele.
-4. **Skill `phase-audit`:** crie o `skill.md` e os arquivos de referência. Teste rodando a skill no repositório base (sem ter implementado nada ainda) — o Integrity Score deve estar baixíssimo, mas a skill já deve rodar sem erros.
-
-### Dia 2 — Plan + Implementação TDD (≈ 7h)
-
-5. **Plan:** invoque `plan-phase` passando a spec. Revise o output, ajuste os refs se precisar.
-6. **Implementação TDD:** para cada item do plano, invoque `implement-phase` e siga `RED → GREEN → REFACTOR`. Cada etapa é um commit com ID na mensagem.
-7. **Migration:** crie e rode.
-8. **Suíte completa:** `npm test && npm run test:e2e`. Verde antes de seguir.
-
-### Dia 3 — Auditoria + Fechamento (≈ 3h)
-
-9. **Rode `/phase-audit`:** veja o score. Provavelmente vai estar abaixo de 80% na primeira rodada.
-10. **Corrija gaps:** cada gap HIGH ou MED vira commit (com ID).
-11. **Re-rode `/phase-audit`:** até passar de 80%.
-12. **Atualize `CLAUDE.md`:** raiz e `nestjs-project/`.
-13. **Exporte a sessão:** salve em `_claude-sessions/11-fase03-reactions.txt`.
-14. **Revisão final:** passe o checklist de critérios de aceite item por item.
-
 ## Reprova automática
 
 - ❌ Codar o módulo sem invocar as skills `research`, `plan-phase` e `implement-phase`
@@ -432,15 +401,13 @@ O repositório já contém:
 
 ## Como será avaliado
 
-| Critério | Peso | O que se avalia |
-|----------|-----:|-----------------|
-| **Spec rastreável** | 20% | IDs estáveis, critérios testáveis, mesmo padrão da Phase 02 |
-| **Skill `phase-audit`** | 25% | Frontmatter, agnóstica de phase, calcula score corretamente, gera relatório válido |
-| **Disciplina TDD com rastreabilidade** | 30% | Commits granulares com ID, testes com ID, ciclo RED→GREEN→REFACTOR visível |
-| **Integrity Score final** | 15% | ≥ 80% (gerado pela própria skill) |
-| **`CLAUDE.md` íntegro** | 10% | Reflete o estado real do código (raiz + nestjs-project) |
-
-**Notas de corte:** ≥ 80% excelente · 65–79% aprovado · < 65% refazer.
+| Critério | O que se avalia |
+|----------|-----------------|
+| **Spec rastreável** | IDs estáveis, critérios testáveis, mesmo padrão da Phase 02 |
+| **Skill `phase-audit`** | Frontmatter, agnóstica de phase, calcula score corretamente, gera relatório válido |
+| **Disciplina TDD com rastreabilidade** | Commits granulares com ID, testes com ID, ciclo RED→GREEN→REFACTOR visível |
+| **Integrity Score final** | ≥ 80% (gerado pela própria skill) |
+| **`CLAUDE.md` íntegro** | Reflete o estado real do código (raiz + nestjs-project) |
 
 ## Dicas Finais
 
