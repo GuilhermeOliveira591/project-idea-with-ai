@@ -37,6 +37,11 @@ describe('Database migrations (integration)', () => {
       ),
       dataSource.query(`DROP TABLE IF EXISTS "migrations" CASCADE`),
     ]);
+    // The enum type is independent of the tables — drop it too so runMigrations
+    // re-creates it from a clean schema (CASCADE table drops do not remove it).
+    await dataSource.query(
+      `DROP TYPE IF EXISTS "public"."verification_tokens_type_enum"`,
+    );
   });
 
   afterAll(async () => {
