@@ -1,7 +1,7 @@
 # Phase 06 — Inscrição em Canais — Progress
 
 **Status:** in_progress
-**SIs:** 4/5 completed
+**SIs:** 5/5 completed
 
 ### SI-06.1 — Subscription Entity and Migration
 - **Status:** completed
@@ -24,6 +24,6 @@
 - **Observations:** Listing uses one `find` with `relations: ['channel']` + one grouped `COUNT ... GROUP BY` — constant queries regardless of N (no N+1).
 
 ### SI-06.5 — Controller, DTO, Module, E2E
-- **Status:** pending
-- **Tests:** —
-- **Observations:** —
+- **Status:** completed
+- **Tests:** `subscriptions.module.spec.ts` (compilation) — 1 passed; `test/subscriptions.e2e-spec.ts` — 11 passed (4 endpoints: 401 sem token, 201+409 duplicada, 409 auto-inscrição, 404 canal inexistente, 400 UUID inválido, 204 idempotente, listagem com subscriber_count, contagem).
+- **Observations:** Controller sem prefixo (rotas completas por método). `ChannelIdParamDto` (@IsUUID) valida o param. `cleanAllTables` mantido intacto — specs novos limpam `subscriptions` localmente. `SubscriptionsModule` registrado no `AppModule`.
