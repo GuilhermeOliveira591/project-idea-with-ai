@@ -1,7 +1,7 @@
 # Phase 06 — Inscrição em Canais — Progress
 
 **Status:** in_progress
-**SIs:** 3/5 completed
+**SIs:** 4/5 completed
 
 ### SI-06.1 — Subscription Entity and Migration
 - **Status:** completed
@@ -19,9 +19,9 @@
 - **Observations:** Unique-violation race fallback re-thrown as `AlreadySubscribedException`. Unsubscribe deletes idempotently after a 404 channel check.
 
 ### SI-06.4 — SubscriptionsService: List and Subscriber Count
-- **Status:** pending
-- **Tests:** —
-- **Observations:** —
+- **Status:** completed
+- **Tests:** unit `countSubscribers` (404 + count) and integration `listSubscriptions` (empty, join + embedded subscriber_count, newest-first) and `countSubscribers` — full service suite 18 passed.
+- **Observations:** Listing uses one `find` with `relations: ['channel']` + one grouped `COUNT ... GROUP BY` — constant queries regardless of N (no N+1).
 
 ### SI-06.5 — Controller, DTO, Module, E2E
 - **Status:** pending

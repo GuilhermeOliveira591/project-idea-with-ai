@@ -144,4 +144,58 @@ describe('SubscriptionsService (integration)', () => {
       ).rejects.toBeInstanceOf(ChannelNotFoundException);
     });
   });
+
+  describe('listSubscriptions', () => {
+    it('returns an empty array when the user follows nothing', async () => {
+      const user = await newUser();
+      expect(await service.listSubscriptions(user.id)).toEqual([]);
+    });
+
+    it('returns followed channels joined with subscriber_count, newest first', async () => {
+      const owner1 = await newUser();
+      const channel1 = await newChannel(owner1.id);
+      const owner2 = await newUser();
+      const channel2 = await newChannel(owner2.id);
+      const follower = await newUser();
+      const other = await newUser();
+
+      await service.subscribe(follower.id, channel1.id);
+      await service.subscribe(follower.id, channel2.id);
+      await service.subscribe(other.id, channel2.id);
+
+      const list = await service.listSubscriptions(follower.id);
+
+      expect(list).toHaveLength(2);
+      // Most recently followed first: channel2 was followed after channel1.
+      expect(list[0].channel.id).toBe(channel2.id);
+      expect(list[0].channel.nickname).toBe(channel2.nickname);
+      expect(list[0].channel.subscriber_count).toBe(2);
+      expect(list[1].channel.id).toBe(channel1.id);
+      expect(list[1].channel.subscriber_count).toBe(1);
+    });
+  });
+
+  describe('countSubscribers', () => {
+    it('returns the live subscriber count', async () => {
+      const owner = await newUser();
+      const channel = await newChannel(owner.id);
+      const f1 = await newUser();
+      const f2 = await newUser();
+      await service.subscribe(f1.id, channel.id);
+      await service.subscribe(f2.id, channel.id);
+
+      const result = await service.countSubscribers(channel.id);
+
+      expect(result).toEqual({
+        channel_id: channel.id,
+        subscriber_count: 2,
+      });
+    });
+
+    it('throws ChannelNotFoundException for a non-existent channel', async () => {
+      await expect(
+        service.countSubscribers(MISSING_UUID),
+      ).rejects.toBeInstanceOf(ChannelNotFoundException);
+    });
+  });
 });

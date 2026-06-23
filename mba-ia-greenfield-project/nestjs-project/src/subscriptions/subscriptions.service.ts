@@ -8,6 +8,10 @@ import {
   ChannelNotFoundException,
 } from '../common/exceptions/domain.exception';
 import { Subscription } from './entities/subscription.entity';
+import type {
+  SubscriberCount,
+  SubscriptionListItem,
+} from './subscriptions.types';
 
 const PG_UNIQUE_VIOLATION = '23505';
 
@@ -69,5 +73,53 @@ export class SubscriptionsService {
       user_id: userId,
       channel_id: channelId,
     });
+  }
+
+  async listSubscriptions(userId: string): Promise<SubscriptionListItem[]> {
+    // One join query for the followed channels (no N+1)...
+    const subscriptions = await this.subscriptionRepository.find({
+      where: { user_id: userId },
+      relations: ['channel'],
+      order: { created_at: 'DESC' },
+    });
+    if (subscriptions.length === 0) {
+      return [];
+    }
+
+    // ...plus one grouped aggregate for every channel's subscriber count.
+    const channelIds = subscriptions.map((s) => s.channel_id);
+    const counts = await this.subscriptionRepository
+      .createQueryBuilder('subscription')
+      .select('subscription.channel_id', 'channel_id')
+      .addSelect('COUNT(*)', 'count')
+      .where('subscription.channel_id IN (:...channelIds)', { channelIds })
+      .groupBy('subscription.channel_id')
+      .getRawMany<{ channel_id: string; count: string }>();
+
+    const countByChannel = new Map(
+      counts.map((row) => [row.channel_id, Number(row.count)]),
+    );
+
+    return subscriptions.map((subscription) => ({
+      subscribed_at: subscription.created_at,
+      channel: {
+        id: subscription.channel.id,
+        name: subscription.channel.name,
+        nickname: subscription.channel.nickname,
+        description: subscription.channel.description,
+        subscriber_count: countByChannel.get(subscription.channel_id) ?? 0,
+      },
+    }));
+  }
+
+  async countSubscribers(channelId: string): Promise<SubscriberCount> {
+    const channel = await this.channelsService.findById(channelId);
+    if (!channel) {
+      throw new ChannelNotFoundException();
+    }
+    const subscriber_count = await this.subscriptionRepository.count({
+      where: { channel_id: channelId },
+    });
+    return { channel_id: channelId, subscriber_count };
   }
 }

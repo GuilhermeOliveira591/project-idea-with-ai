@@ -124,4 +124,23 @@ describe('SubscriptionsService (unit)', () => {
       });
     });
   });
+
+  describe('countSubscribers', () => {
+    it('throws ChannelNotFoundException when the channel does not exist', async () => {
+      channelsService.findById.mockResolvedValue(null);
+
+      await expect(
+        service.countSubscribers('channel-id'),
+      ).rejects.toBeInstanceOf(ChannelNotFoundException);
+    });
+
+    it('returns the subscriber count for an existing channel', async () => {
+      channelsService.findById.mockResolvedValue(makeChannel('owner'));
+      repo.count.mockResolvedValue(3);
+
+      const result = await service.countSubscribers('channel-id');
+
+      expect(result).toEqual({ channel_id: 'channel-id', subscriber_count: 3 });
+    });
+  });
 });
