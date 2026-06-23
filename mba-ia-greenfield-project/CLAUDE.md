@@ -105,3 +105,18 @@ Skip documentation lookup only for trivial operations such as:
 
 If a library is involved and there is uncertainty, documentation lookup is mandatory.
 If the documentation returned does not match the installed version, flag the discrepancy before proceeding.
+
+## Subscriptions (Fase 06, recorte)
+
+Channel subscriptions — the video-independent slice of Phase 06, built on the Phase 02 `User`/`Channel` foundation.
+
+- Endpoints (all authenticated via the global `JwtAuthGuard`):
+  - `POST /channels/:channelId/subscription` — inscrever (201; 409 `ALREADY_SUBSCRIBED`, 409 `CANNOT_SUBSCRIBE_TO_OWN_CHANNEL`, 404 `CHANNEL_NOT_FOUND`)
+  - `DELETE /channels/:channelId/subscription` — cancelar (204, idempotente; 404 `CHANNEL_NOT_FOUND`)
+  - `GET /me/subscriptions` — canais que o usuário segue, com `subscriber_count` embutido (sem N+1)
+  - `GET /channels/:channelId/subscribers/count` — contagem de inscritos de um canal
+- Regras: 1 inscrição por `(user_id, channel_id)` (unique constraint); sem auto-inscrição.
+- Módulo: `nestjs-project/src/subscriptions/` (espelha `auth/`: Module + Controller + DTO + Service + entity).
+- Migration: `nestjs-project/src/database/migrations/*-CreateSubscriptions.ts`.
+- Plano: `docs/phases/phase-06-subscriptions.md` · Decisões: `docs/decisions/technical-decisions-phase-06-subscriptions.md` · Verificação: `docs/phases/phase-06-subscriptions.verification.md`.
+- Testes: `nestjs-project/src/subscriptions/**/*.spec.ts`, `nestjs-project/src/subscriptions/**/*.integration-spec.ts` e `nestjs-project/test/subscriptions.e2e-spec.ts`.

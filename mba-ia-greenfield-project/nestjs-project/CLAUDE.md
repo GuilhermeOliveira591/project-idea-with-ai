@@ -159,3 +159,17 @@ NestJS with standard module structure. Source lives in `src/`, compiled output i
 ## REST Conventions
 
 This is a RESTful API. All endpoints must follow standard REST conventions — correct HTTP methods, proper status codes, plural resource nouns, and consistent URL structure. Details are enforced via rules on controller files.
+
+## Subscriptions (Fase 06, recorte)
+
+Channel subscriptions module (`src/subscriptions/`), mirroring `auth/` (Module + Controller + DTO + Service + entity). All endpoints are protected by the global `JwtAuthGuard` (no `@Public()`).
+
+- Endpoints:
+  - `POST /channels/:channelId/subscription` — 201; 409 `ALREADY_SUBSCRIBED`, 409 `CANNOT_SUBSCRIBE_TO_OWN_CHANNEL`, 404 `CHANNEL_NOT_FOUND`, 400 on non-UUID `channelId`
+  - `DELETE /channels/:channelId/subscription` — 204, idempotent; 404 `CHANNEL_NOT_FOUND`
+  - `GET /me/subscriptions` — followed channels with embedded `subscriber_count` (single join query + one grouped `COUNT`, no N+1)
+  - `GET /channels/:channelId/subscribers/count` — `{ channel_id, subscriber_count }`
+- Rule: one subscription per `(user_id, channel_id)` (unique constraint in `subscriptions`); a user cannot subscribe to their own channel.
+- Entity `Subscription` → table `subscriptions` (`id`, `user_id` FK, `channel_id` FK, `created_at`); migration `src/database/migrations/*-CreateSubscriptions.ts`.
+- `SubscriptionsService` depends on `ChannelsService.findById` (channel lookup for 404 / self-subscription). New domain exceptions live in `src/common/exceptions/domain.exception.ts`.
+- Tests: `src/subscriptions/**/*.spec.ts` (unit), `src/subscriptions/**/*.integration-spec.ts` (real Postgres), `test/subscriptions.e2e-spec.ts` (HTTP). Plan: `docs/phases/phase-06-subscriptions.md`; verification: `docs/phases/phase-06-subscriptions.verification.md`.

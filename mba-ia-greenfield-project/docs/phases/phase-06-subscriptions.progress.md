@@ -1,7 +1,9 @@
 # Phase 06 — Inscrição em Canais — Progress
 
-**Status:** in_progress
+**Status:** completed
 **SIs:** 5/5 completed
+
+> Verificação final: `npm test` 157 verdes + `npm run test:e2e` 57 verdes; `npx tsc --noEmit` exit 0; `npm run build` exit 0. Relatório em `phase-06-subscriptions.verification.md` (100%, APROVADO).
 
 ### SI-06.1 — Subscription Entity and Migration
 - **Status:** completed
