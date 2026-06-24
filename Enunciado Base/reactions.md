@@ -1,342 +1,239 @@
-# Continuando o StreamTube com IA, Fase 06: Inscrição em Canais
+# Continuando o StreamTube com IA — Fase 03: Upload e Processamento de Vídeos
 
 ## Descrição
 
-O **StreamTube** é a plataforma de compartilhamento de vídeos que você acompanhou sendo construída ao longo do curso. O professor entregou as **Fases 01 (configuração base)** e **02 (cadastro, login e canais)** seguindo um workflow de desenvolvimento orientado por IA (`research → plan → implement`), apoiado por uma fundação de IA (CLAUDE.md, rules e skills) e pelos servidores MCP do projeto.
+O **StreamTube** é a plataforma de compartilhamento de vídeos que você acompanhou sendo construída ao longo do curso. O professor entregou as **Fases 01 (configuração base)** e **02 (autenticação, usuários e canais)**, backend e frontend, seguindo o workflow de desenvolvimento orientado por IA do curso.
 
-Seu desafio é **dar continuidade ao projeto entregando uma fatia da Fase 06, Interações Sociais: a inscrição em canais** (seguir e deixar de seguir um canal), usando exatamente o mesmo método e as mesmas skills do curso. Além de implementar a feature, você vai **criar uma skill nova de verificação de fase** que audita a integridade do seu próprio processo e gera um relatório com uma nota de integridade.
+Seu desafio é **dar continuidade ao projeto implementando a próxima fase da sequência, a Fase 03 — Upload e Processamento de Vídeos**, por completo. Diferente de uma feature simples de CRUD, a Fase 03 é um desafio de engenharia por si só: envolve **armazenamento de arquivos grandes, processamento assíncrono em fila, um worker de vídeo, streaming e infraestrutura nova em Docker**. Você vai conduzir tudo isso usando IA como ferramenta principal, seguindo o workflow do projeto de ponta a ponta.
 
-Este é um desafio **de backend**: a entrega é a API e os artefatos do processo, sem parte de frontend.
+Este é um desafio **de backend**: a entrega é a API, o worker, a infraestrutura e os artefatos do processo. (Há um frontend no repositório, mas a interface de vídeo não faz parte do escopo desta fase.)
 
-> **Por que este desafio vai direto para a Fase 06, pulando a 03, 04 e 05?**
-> O plano do projeto (`docs/project-plan.md`) define sete fases. As Fases 03 (upload de vídeos), 04 (gerenciamento) e 05 (página de visualização) giram em torno de vídeo, e a 03 em especial depende de infraestrutura pesada, como object storage, fila de mensagens e um worker de processamento (FFmpeg), que não existe no repositório base e fugiria do foco aqui, que é operar o workflow de IA de ponta a ponta. A Fase 06 (Interações Sociais) tem uma parte que **não depende de vídeo**: a inscrição em canais, que se apoia inteiramente em usuários e canais, prontos desde a Fase 02. Este desafio recorta exatamente essa parte: é a fatia da continuidade do projeto que dá para construir sobre o que já está pronto, sem te prender em infraestrutura.
->
-> Dentro da própria Fase 06, ficamos só com a inscrição em canais (e não com likes e comentários) porque likes e comentários incidem sobre *vídeos*, que ainda não existem no projeto. Se você abrir o `project-plan.md`, vai notar que a Fase 06 aparece como "Depende de: Fase 02, Fase 05", e essa dependência da Fase 05 vem exatamente dos likes e comentários em vídeo. A inscrição em canais não depende de nenhuma fase de vídeo: ela se apoia só na Fase 02, que já está pronta.
+## Ferramenta de IA
+
+O projeto base é construído para o **Claude Code**, que é a ferramenta **recomendada**: toda a fundação de IA (skills, sub-agents, `CLAUDE.md`, rules e `.mcp.json`) já vem pronta para ele.
+
+Você **pode** usar outra ferramenta agêntica se preferir (Gemini CLI, OpenAI Codex e similares). Mas atenção: a fundação de IA do repositório é específica do Claude Code. Se optar por outra ferramenta, **é responsabilidade sua portar essa fundação para a convenção dela** antes de começar:
+
+- O `CLAUDE.md` → o arquivo de instruções equivalente (por exemplo, `GEMINI.md` no Gemini CLI, `AGENTS.md` no Codex).
+- As skills e sub-agents do workflow → o mecanismo equivalente da ferramenta (comandos, extensões, custom modes) ou, na falta de equivalente, conduza o mesmo workflow manualmente.
+- O `.mcp.json` e os servidores MCP (Postgres, context7) → a configuração de MCP da ferramenta escolhida.
+
+**Consulte sempre a documentação oficial da ferramenta** para os nomes corretos de arquivos, pastas e comandos. Independentemente da ferramenta, o **workflow a seguir é o mesmo** e os **artefatos entregues são os mesmos** (descritos abaixo): só a máquina muda. A escolha da ferramenta não altera os Critérios de Aceite.
 
 ## Sobre o uso de IA
 
-A IA é a ferramenta de produção principal e obrigatória. Seu papel é de **maestro do processo**: conduzir as skills do projeto na ordem certa, revisar criticamente cada saída, refinar prompts quando o resultado vier raso, e manter os artefatos coerentes entre si.
+A IA é a ferramenta de produção principal e obrigatória. Seu papel é de **maestro do processo**: conduzir o workflow na ordem certa, revisar criticamente cada saída, refinar prompts quando o resultado vier raso, consultar a documentação das libs antes de implementar e manter os artefatos coerentes entre si.
 
-Na prática:
-
-- A investigação técnica sai da skill **`research`**.
-- O plano de implementação sai da skill **`plan-phase`**.
-- A implementação é conduzida pela skill **`implement-phase`**, em ciclos com teste.
-- As diretrizes de teste vêm das skills **`generate-test-guide`** / **`testing-guide-nestjs-project`**.
-- A verificação de integridade roda na skill **`verify-phase`**, que **você cria neste desafio**.
-- Os **CLAUDE.md** são atualizados a partir do estado real do repositório.
-
-> As skills `research`, `plan-phase`, `implement-phase`, `generate-test-guide` e `testing-guide-nestjs-project` **já vêm no projeto e são de uso obrigatório, não as recrie**. A única skill que você cria é a `verify-phase`.
-
-A presença da IA precisa ser observável no repositório: skills invocadas, decisões e plano gerados, commits granulares e a sessão de Claude arquivada.
+A presença da IA precisa ser observável no repositório: decisões técnicas, artefatos de planejamento, plano da fase e progresso, tudo gerado pelo fluxo.
 
 ## Objetivo
 
 Entregar, em um fork público do repositório base, dando continuidade ao projeto `mba-ia-greenfield-project`:
 
-- **Decisões técnicas** da fase, geradas pela `research` (`docs/decisions/technical-decisions-phase-06-subscriptions.md`)
-- **Plano de implementação** da fase, gerado pela `plan-phase` (`docs/phases/phase-06-subscriptions.md`), no mesmo formato da `phase-02-auth.md`
-- **Módulo `subscriptions/`** implementado, espelhando o módulo `auth/`, com migration, testes e suíte verde
-- **Skill nova `verify-phase`** que lê o repositório e gera um relatório de integridade do processo
-- **Relatório de verificação** gerado pela skill (`docs/phases/phase-06-subscriptions.verification.md`), com nota **≥ 85%**
-- **CLAUDE.md** (raiz e `nestjs-project/`) atualizados com a seção de Subscriptions
-- **Sessão de Claude** arquivada em `_claude-sessions/11-fase06-subscriptions.txt`
+- **Decisões técnicas** da fase (fila, estratégia de upload, streaming, processamento etc.), em `docs/decisions/`
+- **Artefatos de planejamento** da fase, na pasta `docs/phases/phase-03-videos/` (`context.md`, `validation.md`, o plano `phase-03-videos.md`, o `progress.md` e o `library-refs.md` quando houver libs novas a fixar)
+- **Módulo de vídeos** implementado no backend, com a infraestrutura nova (storage, fila e worker) subindo via Docker
+- A **Fase 03 funcional**: upload de até 10GB, processamento automático, thumbnail, URL única, streaming e download
+- **`CLAUDE.md`** (ou o arquivo equivalente da sua ferramenta) atualizado com a seção de vídeos
 
-Toda informação registrada nos artefatos deve ser rastreável ao plano ou ao código. Não invente requisitos, decisões ou testes sem origem identificável.
+Toda informação registrada nos artefatos deve ser rastreável ao plano ou ao código. Não invente requisitos, decisões ou comportamentos sem origem identificável.
 
 ## Contexto
 
 ### O que já existe no projeto
 
-O repositório base contém o StreamTube com as Fases 01 e 02 fechadas:
+- Backend **NestJS 11 + TypeORM + PostgreSQL 17** em `nestjs-project/`, com as Fases 01 e 02 fechadas: módulos `auth/`, `users/`, `channels/`, `mail/`, `common/`, `config/`, `database/` e `swagger/` (OpenAPI).
+- Cada usuário tem um **canal** (relação 1:1), criado no cadastro. Os vídeos da Fase 03 pertencem a um canal.
+- Guard JWT global, filtro de exceções de domínio, `ValidationPipe` global, rate limiting, migrations versionadas e seeds.
+- Infra atual no `nestjs-project/compose.yaml`: **apenas** API, PostgreSQL e Mailpit.
+- Um frontend Next.js em `next-frontend/` (Fases 01–02), fora do escopo desta fase.
 
-- Backend **NestJS + TypeORM + PostgreSQL** em `nestjs-project/`, que sobe via `compose.yaml`.
-- Módulo **`auth/`** completo (Module + Controller + DTOs + Service + entities + guards + e2e em `test/`). Esse é o seu **espelho arquitetural**: o módulo de subscriptions deve seguir esse mesmo formato.
-- Módulos **`users/`** e **`channels/`** com Service + entidade (sem controller HTTP).
-- Entidades **`User`** e **`Channel`** com relação 1:1 (cada usuário tem um canal, criado no cadastro).
-- Guard JWT global (`JwtAuthGuard`) com decorators `@Public()` e `@CurrentUser()`, filtro de exceção de domínio, `ValidationPipe` global, rate limiting e migrations versionadas.
+O que **não** existe e você vai construir: o módulo de vídeo, a tabela de vídeos, o **serviço de object storage**, a **fila de processamento** e o **worker de vídeo (FFmpeg)**. A arquitetura-alvo (em `docs/diagrams/software-arch.mermaid` e no `CLAUDE.md`) já prevê esses três componentes como parte da Fase 03.
 
-O que **não** existe (e por isso está fora deste desafio): vídeos, upload, comentários, likes. Não há entidade, tabela ou módulo de vídeo: as Fases 03 a 05 não foram implementadas.
+### O workflow do projeto
 
-### O workflow e os artefatos do curso
+O Luiz desenvolve por um **workflow de planejamento em pipeline**, e você deve segui-lo. Cada estágio é uma skill do projeto e gera um artefato:
 
-O projeto adota o ciclo `research → plan → implement`, e você deve segui-lo:
-
-| Etapa | Skill | Artefato gerado |
+| Estágio | Skill (Claude Code) | Artefato |
 |---|---|---|
-| Investigar o código e decidir a abordagem | `research` | `docs/decisions/technical-decisions-phase-NN-*.md` |
-| Gerar o plano executável (passos, contratos, dados) | `plan-phase` | `docs/phases/phase-NN-*.md` |
-| Implementar passo a passo, rodando os testes | `implement-phase` | código + `docs/phases/phase-NN-*.progress.md` |
+| Pesquisar opções e decidir o caminho técnico | `research` | `docs/decisions/technical-decisions-phase-03-videos.md` |
+| Consolidar o contexto da fase | `plan-context` | `docs/phases/phase-03-videos/context.md` |
+| Validar (inconsistências, decisões faltando, gaps) | `plan-validate` | `validation.md` (veredito `clean`/`dirty`) |
+| Resolver pendências e fixar libs | `plan-resolve` | atualiza decisões/contexto + `library-refs.md` |
+| Gerar o plano executável | `plan-build` | `phase-03-videos.md` (SIs + Technical Specs + Dependency Map + Deliverables) |
+| Gerar specs de teste *(opcional)* | `plan-test-specs` | specs de teste |
+| Implementar passo a passo | `implement` | código + `progress.md` |
 
-Convenções do projeto que o seu trabalho precisa respeitar:
+Pontos do formato que você precisa respeitar:
 
-- O plano (`phase-NN-*.md`) é organizado em **Step Implementations** com IDs no formato **`SI-NN.x`** (ex.: `SI-06.1`, `SI-06.2`), além das seções **Data Model**, **API Contracts**, **Authorization Matrix**, **Error Catalog**, **Dependency Map** e **Deliverables**. Use a `phase-02-auth.md` como referência de formato.
-- Os **commits são granulares por SI**, no formato real do projeto: `Implementando SI-06.x: <descrição>`.
-- O **`phase-NN-*.progress.md`** é o log de progresso por SI (status, testes que passaram, observações), mantido durante a implementação.
-- As skills ficam em **`.claude/skills/<nome>/SKILL.md`** (maiúsculo), com frontmatter `name`, `description` e `disable-model-invocation: true`.
+- A fase é uma **pasta** (`docs/phases/phase-03-videos/`) com `context.md`, `validation.md`, o plano `phase-03-videos.md` e o `progress.md` — mais o `library-refs.md` quando a fase fixa bibliotecas novas (o caso aqui, por causa de storage/fila/FFmpeg). Use a pasta `docs/phases/phase-02-auth/` como referência de formato.
+- O plano é organizado em **Step Implementations** (`SI-03.1`, `SI-03.2`, …) com as **Technical Specifications** (Data Model, API Contracts, Authorization Matrix, Error Catalog e, por causa da fila, **Events/Messages**), o Dependency Map e os Deliverables.
+- O `validation.md` precisa terminar com **status `clean`** antes de implementar.
+- Os **sub-agents** de leitura (`.claude/agents/`) são usados pelas skills por baixo dos panos: você não os invoca diretamente.
 
-> **Atenção a um detalhe que reprova:** o `progress.md` já tem um significado no projeto (log de SIs). O relatório da sua skill de verificação é um arquivo **diferente** (`.verification.md`): não sobrescreva nem reaproveite o `progress.md`.
+> Para quem usa outra ferramenta: produza os **mesmos artefatos** (decisões, contexto, validação, plano com SIs e Technical Specs, progresso), seguindo o mesmo encadeamento. O formato da pasta da fase é o contrato; a skill que o gera é detalhe da ferramenta.
 
-## Escopo da feature: Inscrição em Canais
+### Regras e Definition of Done
 
-Você vai implementar o seguinte, e nada além disso:
+O `CLAUDE.md` define as regras do projeto, que valem para esta fase:
 
-**Comportamento**
+- **Definition of Done:** a fase só está pronta quando a suíte de testes relevante passa (unit + integração + e2e), a suíte completa passa, `npx tsc --noEmit` sai com código 0 e `npm run lint` passa.
+- **Docker:** tudo roda em containers; use sempre o **nome do serviço** do Compose como host (ex.: `db`), nunca `localhost`.
+- **Documentação de libs:** antes de implementar com qualquer biblioteca, consulte a doc oficial via **context7** (MCP) e siga a versão instalada.
+- **Git Flow:** branches de `feature/*` saem da `dev` e voltam para a `dev`; nunca commite direto na `main`. Commits curtos e descritivos.
+- **Testes:** sufixos `*.spec.ts` (unit), `*.integration-spec.ts` (integração com banco/serviços reais), `*.e2e-spec.ts` (e2e via supertest).
 
-- Um usuário autenticado pode **se inscrever** em um canal e **cancelar a inscrição**.
-- Um usuário pode **listar os canais que segue**.
-- Um canal expõe a sua **contagem de inscritos**.
+## Escopo da Fase 03 — Upload e Processamento de Vídeos
 
-**Endpoints** (todos autenticados, reusando o `JwtAuthGuard` global)
+Você vai entregar as capacidades abaixo (definição completa em `docs/project-plan.md`, Fase 03):
 
-- `POST   /channels/:channelId/subscription`: inscrever-se
-- `DELETE /channels/:channelId/subscription`: cancelar inscrição
-- `GET    /me/subscriptions`: listar canais que o usuário segue
-- contagem de inscritos exposta na resposta do canal (defina a forma exata no plano)
+- **Object storage** para os arquivos de vídeo e thumbnails.
+- **Fila de processamento** em segundo plano e um **worker** que a consome.
+- **Upload de vídeos de até 10GB sem travar o sistema** (sem segurar a API durante o envio).
+- **Pré-cadastro automático do vídeo como rascunho** ao iniciar o upload.
+- **Processamento automático após o upload**: extração de duração e metadados.
+- **Geração automática de thumbnail** a partir de um frame do vídeo.
+- **URL única por vídeo**, sem conflito com outros.
+- **Reprodução via streaming** (sem exigir o download completo).
+- **Download do vídeo** pelo usuário.
 
-**Regras de negócio e edge cases** (refine e numere no plano via `plan-phase`)
+**Entregáveis (do plano original):** upload de até 10GB funcional, processamento automático do vídeo, streaming funcionando e URLs únicas geradas.
 
-- Inscrição é única por par **(usuário, canal)**, garantida por *unique constraint* no banco.
-- Um usuário **não pode se inscrever no próprio canal**.
-- **Inscrição duplicada** e **cancelamento de inscrição inexistente**: defina o comportamento (idempotente vs. conflito/erro) na `research` e justifique.
-- **Canal inexistente** → 404.
-- Comportamento para **usuário não confirmado** (`is_confirmed = false`): decida e documente.
-- A listagem de inscrições **não pode ter problema de N+1** (carregue o canal junto), alinhado à rule `db-avoid-n-plus-one`.
+**Persistência:** uma entidade/tabela de **vídeos** ligada ao canal, com pelo menos identificação, dono (canal), título, **status** (ex.: rascunho → processando → pronto/erro), chaves de storage do arquivo e do thumbnail, duração e metadados, e o identificador da URL única. O modelo exato é definido no plano (Data Model).
 
-**Persistência**
+**Decisões que você precisa tomar e justificar na etapa de research:**
 
-- Nova entidade **`Subscription`** → tabela **`subscriptions`**: `id` (uuid), `user_id` (uuid, FK → users), `channel_id` (uuid, FK → channels), `created_at`. *Unique* em `(user_id, channel_id)`; índices em `user_id` e `channel_id`.
-- **Migration TypeORM** criando a tabela, no padrão das migrations existentes.
+- A **tecnologia de fila** — o plano do projeto a deixa explicitamente em aberto ("TBD"). É a principal decisão de stack da fase.
+- A **estratégia de upload de 10GB sem travar** (ex.: upload direto ao storage via URL pré-assinada / multipart, em vez de passar o arquivo pela API).
+- Como o **worker** roda (processo/container separado) e como ele extrai metadados e gera o thumbnail (FFmpeg/ffprobe).
+- A estratégia de **URL única** e a de **streaming** (ex.: requisições com range / `206 Partial Content`).
+- O ciclo de **status** do vídeo e o que acontece em caso de falha no processamento.
 
-> Esse recorte mapeia direto em três entregáveis da Fase 06 do plano original: *"inscrição em canais (seguir/deixar de seguir)"*, *"área de canais seguidos"* e *"contagem de inscritos na página do canal"*.
+> **Sobre o object storage:** ele não é uma escolha em aberto. O projeto já aponta para **S3 (compatível)** — na prática você roda **MinIO** localmente em Docker (mesma API do S3) e trocaria por S3 em produção. O que você decide aqui é *como* usá-lo (organização de buckets/chaves, upload pré-assinado), não *qual* storage. A decisão de stack genuinamente aberta é a **fila**.
+>
+> Essas decisões são o coração da etapa de research. Pesquise as opções, registre os trade-offs e a escolha no documento de decisões, e só então parta para o planejamento.
 
 ## Requisitos
 
-### 1. Decisões técnicas (via `research`)
+### 1. Decisões técnicas (research)
 
-Rode a skill **`research`** sobre o código existente para mapear os pontos de integração (entidades `User`/`Channel`, guard JWT, padrão de service/repository, filtro de exceções) e decidir a abordagem da feature. Salve o resultado em `docs/decisions/technical-decisions-phase-06-subscriptions.md`.
+Rode a etapa de **research** sobre as decisões em aberto acima. Salve em `docs/decisions/technical-decisions-phase-03-videos.md`, no formato dos documentos de decisão existentes (opções, trade-offs e recomendação por decisão). É esse documento que alimenta o planejamento.
 
-As decisões em aberto do escopo (inscrição duplicada, cancelamento inexistente, usuário não confirmado, forma de expor a contagem) devem ser **decididas e justificadas aqui**: é esse documento que alimenta o plano.
+### 2. Planejamento (pipeline)
 
-### 2. Plano de implementação (via `plan-phase`)
+Conduza a pipeline de planejamento até o plano final, gerando os artefatos na pasta `docs/phases/phase-03-videos/`:
 
-Invoque a skill **`plan-phase`** a partir das decisões. Salve em `docs/phases/phase-06-subscriptions.md`, **espelhando o formato da `phase-02-auth.md`**:
+1. `plan-context` → `context.md`
+2. `plan-validate` → `validation.md` (precisa fechar em **`clean`**)
+3. `plan-resolve` → resolve as pendências apontadas e gera `library-refs.md` (libs confirmadas via context7)
+4. `plan-build` → `phase-03-videos.md`, com Step Implementations (`SI-03.x`), Technical Specifications (incluindo **Events/Messages** para a fila), Dependency Map e Deliverables
 
-- Objetivo
-- **Step Implementations** (`SI-06.1`, `SI-06.2`, …) com ações e arquivos a criar/tocar
-- **Data Model** (tabela `subscriptions`, constraints, índices)
-- **API Contracts** (cada endpoint com payload de exemplo e status codes)
-- **Authorization Matrix**
-- **Error Catalog**
-- **Dependency Map** e **Deliverables**
+> Revise criticamente cada saída. O `validation.md` aponta decisões faltando e gaps de dependência: itere `validate ↔ resolve` até ficar `clean`. Plano frouxo gera implementação frouxa.
 
-> Revise criticamente a saída crua da skill. Normalmente são necessárias 1 a 2 iterações: contratos vagos, SIs grandes demais ou dependências fora de ordem envenenam a implementação.
+### 3. Implementação (implement)
 
-### 3. Implementação (via `implement-phase` + testes)
+Implemente a fase conduzido pela skill **`implement`**, SI a SI, rodando os testes a cada passo e só avançando com a suíte do SI verde. Isso inclui:
 
-Implemente o módulo em `nestjs-project/src/subscriptions/`, **espelhando o módulo `auth/`** e conduzido pela skill **`implement-phase`** (que executa SI a SI e só avança com os testes do SI passando).
+- O **módulo de vídeos** no backend, seguindo as **convenções e rules do projeto** (separação de camadas, repository pattern, uso de fila/eventos, transações). Use o módulo `auth/` como referência de forma; a estrutura concreta de arquivos é decisão do seu plano, não do enunciado.
+- A **infraestrutura nova no `compose.yaml`**: serviços de **object storage**, **fila** e **worker**, subindo junto com a stack do backend.
+- A **migration** criando a tabela de vídeos.
+- Os **testes** nos níveis adequados (unit, integração com banco/serviços reais, e2e), conforme as skills de teste do projeto. Não mocke o que dá para testar de verdade com a infra do Compose.
+- O `progress.md` da fase atualizado (status + testes por SI), como na Fase 02.
 
-A organização concreta de arquivos é **decisão do seu plano** (saída da `plan-phase`), não algo que este enunciado entrega pronto: definir a estrutura faz parte do que o desafio avalia. A regra é **consistência arquitetural com o `auth/`**: a mesma divisão em camadas (Module, Controller, Service, DTOs, entidade) e os mesmos tipos de teste que o `auth/` tem: unit (`.spec`), integração (`.integration-spec`) e e2e em `test/`. Investigue o `auth/` na etapa de research e deixe o plano definir os arquivos exatos. Siga também as convenções do projeto para onde vivem a migration (`src/database/migrations/`) e o teste e2e (`test/`).
+Ao final, a **Definition of Done** do `CLAUDE.md` precisa passar inteira.
 
-Independentemente da estrutura que o plano definir, estes artefatos são **inegociáveis** (e cobrados nos Critérios de Aceite): o módulo registrado, um controller com os endpoints, um service com testes unit e de integração, a entidade `Subscription`, o teste e2e da feature e a migration criando a tabela `subscriptions` com *unique* em `(user_id, channel_id)`.
+### 4. Atualização da documentação de IA
 
-Disciplina de implementação (a mesma do projeto do professor):
-
-- **Commits granulares por SI**, no formato `Implementando SI-06.x: <descrição>`. Um commit único gigante (`feat: subscriptions`) reprova.
-- Cada SI com comportamento testável tem **testes** (unit no `.spec`, integração no `.integration-spec`), registrados no `progress.md`.
-- **Testes de integração e e2e usam o PostgreSQL real** do `compose.yaml`: **não mocke o TypeORM** em teste de integração.
-- Mantenha o **`docs/phases/phase-06-subscriptions.progress.md`** atualizado (status + testes por SI), como na Fase 02.
-
-### 4. Skill nova: `verify-phase`
-
-**Por que você cria essa skill.** Num workflow tocado por IA, o agente produz muito e rápido, e é fácil um passo escapar sem ninguém perceber: um SI planejado que nunca foi implementado, código que subiu sem teste, um commit citando um passo que não existe, ou o `progress.md` dizendo uma coisa e o código outra. Conferir isso na mão, no fim de cada fase, é lento e sujeito a erro. A `verify-phase` é um **portão de QA reutilizável**: cruza as fontes de verdade do processo (plano, commits, progress e código/testes) e responde, de forma objetiva, se o que você entregou bate com o que você planejou, e onde estão os furos. Com isso, ela fecha o pilar de **Skills** do curso: você usou skills que *produzem* o trabalho (research, plan, implement) e agora cria uma que *governa a qualidade* dele. Repare que ela não duplica a `implement-phase`: aquela executa pra frente, garantindo teste verde enquanto avança; a `verify-phase` audita o estado final pra trás, plano contra entregue.
-
-Crie a skill em **`.claude/skills/verify-phase/SKILL.md`** (na raiz do projeto, não dentro de `nestjs-project/`). Ela **não duplica** nenhuma skill existente: enquanto as outras *produzem* a fase, esta **mede a integridade do processo** que você executou.
-
-Invocação:
-
-```bash
-claude "/verify-phase phase-06-subscriptions"
-```
-
-A skill **lê o repositório (somente leitura)** e cruza as fontes da fase:
-
-1. O **plano** (`docs/phases/<fase>.md`): extrai os `SI-NN.x`, os arquivos esperados e os critérios de aceite.
-2. O **git log** da fase: extrai os `SI-NN.x` referenciados nos commits.
-3. O **progress.md** (`docs/phases/<fase>.progress.md`): status e testes por SI.
-4. O **código e os testes** em disco: confere se os arquivos previstos pelo plano existem.
-5. O **estado da suíte**: se os SIs com testes estão verdes (lê o `progress.md`; opcionalmente executa a suíte).
-
-E gera **`docs/phases/<fase>.verification.md`** neste formato:
-
-```markdown
-# Fase 06: Relatório de Integridade do Processo
-
-## Nota de Integridade
-88%  STATUS: APROVADO  (corte: ≥ 85%)
-
-## Matriz de Cobertura
-| Dimensão                       | Cobertura | Detalhe                      |
-|--------------------------------|-----------|------------------------------|
-| Plano → Commits (SI)           | 7/7       | ✓                            |
-| SI → Progress                  | 7/7       | ✓                            |
-| Arquivos previstos             | 11/12     | ⚠ falta o e2e do unsubscribe |
-| Suíte de testes                | verde     | ✓                            |
-| Refs órfãos (SI fora do plano) | 0         | ✓                            |
-
-## Gaps detectados
-- [MED] SI-06.5 sem teste e2e correspondente
-
-## Recomendações
-1. Adicione o e2e do cancelamento de inscrição
-```
-
-**Cálculo da nota** (defina os pesos em um arquivo de referência da skill; sugestão):
-
-```
-Nota = (
-    Plano_Commits   * 0.25 +
-    SI_Progress     * 0.20 +
-    Arquivos        * 0.25 +
-    Suite_verde     * 0.20 +
-    (1 - Refs_orfaos_ratio) * 0.10
-) * 100
-```
-
-Requisitos da skill:
-
-- **Frontmatter** com `name`, `description` e `disable-model-invocation: true` (padrão das skills do projeto).
-- **Agnóstica de fase**: recebe o nome da fase como argumento e funciona para `phase-02-auth`, `phase-06-subscriptions` etc.
-- **Somente leitura** sobre o repositório: só escreve o `.verification.md`.
-- Detecta IDs com regex robusto: `\bSI-\d{2}\.\d+\b`.
-- O `SKILL.md` **é um prompt, não um programa**: descreva o procedimento e a ordem, e use arquivos de referência (template do relatório, regex, pesos) para ancorar o comportamento.
-
-> **Teste a skill com o repo "vazio" também.** Ela tem que rodar mesmo antes da implementação: a nota é que vai ser baixa. Se ela quebra sem implementação, o bug é na skill, não no repo.
-
-### 5. Verificação e correção de gaps
-
-Depois de implementar, rode `claude "/verify-phase phase-06-subscriptions"`. **Se a nota ficar abaixo de 85%, corrija os gaps no repositório e rode de novo**: é esperado iterar 2 a 3 vezes. A versão final do `.verification.md` commitada é o relatório avaliado.
-
-> A nota sobe **corrigindo o repositório**, não editando o relatório à mão. O avaliador pode re-rodar a sua skill; se o relatório no repo divergir do que a skill produz, reprova.
-
-### 6. Atualização dos CLAUDE.md
-
-Atualize `CLAUDE.md` (raiz) e `nestjs-project/CLAUDE.md` com a seção de Subscriptions, refletindo o estado real do código:
-
-```markdown
-## Subscriptions (Fase 06, recorte)
-- Endpoints: POST/DELETE /channels/:id/subscription, GET /me/subscriptions
-- Regra: 1 inscrição por (usuário, canal); sem auto-inscrição
-- Plano: docs/phases/phase-06-subscriptions.md
-- Verificação: docs/phases/phase-06-subscriptions.verification.md
-- Testes: src/subscriptions/**/*.spec.ts + test/subscriptions.e2e-spec.ts
-```
-
-`CLAUDE.md` que cite arquivos ou comportamentos inexistentes reprova.
-
-### 7. Sessão arquivada
-
-Exporte a sessão principal de Claude Code para `_claude-sessions/11-fase06-subscriptions.txt` (bruto serve). É evidência secundária, usada pelo avaliador em caso de divergência entre o repositório e o relatório.
+Atualize o `CLAUDE.md` (ou o arquivo equivalente da sua ferramenta) refletindo o estado real do código após a fase: o módulo de vídeos, os endpoints, a fila/worker e o storage. Documentação que cite arquivos ou comportamentos inexistentes reprova.
 
 ## Critérios de Aceite
 
-Todos obrigatórios. Esta é a lista única de avaliação: os requisitos não se repetem em outra seção.
+Todos obrigatórios. Esta é a lista única de avaliação.
 
-**Decisões e plano**
+**Decisões e planejamento**
 
-- [ ] `technical-decisions-phase-06-subscriptions.md` gerado pela `research`, com as decisões em aberto resolvidas e justificadas
-- [ ] `phase-06-subscriptions.md` gerado pela `plan-phase`, no formato da `phase-02-auth.md` (SIs `SI-06.x`, Data Model, API Contracts, Authorization Matrix, Error Catalog, Deliverables)
+- [ ] `technical-decisions-phase-03-videos.md` com as decisões em aberto resolvidas e justificadas (fila, estratégia de upload, streaming, processamento/thumbnail, ciclo de status)
+- [ ] Pasta `docs/phases/phase-03-videos/` com `context.md`, `validation.md` (status `clean`), o plano `phase-03-videos.md`, o `progress.md` e o `library-refs.md` (se houver libs novas a fixar — esperado nesta fase)
+- [ ] O plano segue o formato do projeto: SIs `SI-03.x`, Technical Specifications (Data Model, API Contracts, Authorization Matrix, Error Catalog, Events/Messages), Dependency Map e Deliverables
 
-**Implementação**
+**Implementação — feature**
 
-- [ ] Módulo `subscriptions/` no padrão de `auth/` (Module + Controller + DTO + Service + entities + e2e)
-- [ ] Migration cria a tabela `subscriptions` com *unique* em `(user_id, channel_id)`
-- [ ] Endpoints de inscrever, cancelar, listar inscrições e contagem de inscritos funcionando, todos protegidos por autenticação
-- [ ] Regras cobertas: auto-inscrição bloqueada; canal inexistente → 404; duplicada e cancelamento inexistente conforme decidido
-- [ ] `npm test` e `npm run test:e2e` verdes; sobe via `docker compose -f nestjs-project/compose.yaml up -d`
+- [ ] Upload de vídeo de **até 10GB sem travar** a API, com pré-cadastro do vídeo como rascunho ao iniciar
+- [ ] Processamento automático após o upload: extração de duração/metadados e geração de thumbnail
+- [ ] **URL única** por vídeo, sem conflito
+- [ ] **Streaming** funcionando (sem exigir download completo) e **download** do vídeo disponível
+- [ ] Ciclo de status do vídeo (rascunho → processando → pronto/erro) refletido no banco
 
-**Rastreabilidade e processo**
+**Implementação — infraestrutura e qualidade**
 
-- [ ] Commits granulares por SI no formato `Implementando SI-06.x: ...` (sem commit único gigante)
-- [ ] Testes de integração/e2e usam Postgres real (sem mock de TypeORM)
-- [ ] `phase-06-subscriptions.progress.md` reflete os SIs e seus testes
+- [ ] Object storage, fila e worker **subindo via `docker compose`** junto com o backend
+- [ ] Migration cria a tabela de vídeos; entidade ligada ao canal
+- [ ] Testes nos níveis adequados, verdes (`npm test` e `npm run test:e2e`)
+- [ ] **Definition of Done** completa: suíte verde + `npx tsc --noEmit` (código 0) + `npm run lint`
+- [ ] Git Flow respeitado (trabalho em `feature/*` a partir de `dev`, sem commit direto na `main`)
 
-**Skill `verify-phase`**
+**Documentação e ferramenta**
 
-- [ ] `.claude/skills/verify-phase/SKILL.md` com frontmatter (`name`, `description`, `disable-model-invocation`)
-- [ ] Recebe o nome da fase como argumento (funciona para qualquer fase)
-- [ ] Lê plano + git log + progress.md + arquivos + suíte e gera o `.verification.md` no formato definido
-- [ ] É somente leitura sobre o repositório
-
-**Relatório e fundação**
-
-- [ ] `phase-06-subscriptions.verification.md` gerado pela skill (não escrito à mão), com nota **≥ 85%** e STATUS APROVADO
-- [ ] `CLAUDE.md` raiz e `nestjs-project/` com a seção Subscriptions, coerentes com o código
-- [ ] `_claude-sessions/11-fase06-subscriptions.txt` presente
+- [ ] `CLAUDE.md` (ou equivalente) atualizado com a seção de vídeos, coerente com o código
+- [ ] Se usou outra ferramenta que não o Claude Code: a fundação de IA foi portada para a convenção dela e os artefatos da pasta da fase foram entregues no mesmo formato
 
 ## Reprova automática
 
-- ❌ Implementar sem usar as skills `research`, `plan-phase` e `implement-phase`
-- ❌ Commit único gigante ou sem referência ao SI
-- ❌ Plano que não segue o formato da `phase-02-auth.md` (sem SIs, sem contratos)
-- ❌ Mockar o TypeORM em teste de integração
-- ❌ Skill `verify-phase` sem frontmatter, que não roda, ou que escreve fora do `.verification.md`
-- ❌ Reaproveitar/sobrescrever o `progress.md` como relatório de verificação
-- ❌ Nota de integridade < 85%, ou `.verification.md` escrito à mão
-- ❌ `CLAUDE.md` inconsistente com o código
-- ❌ Inventar vídeos, likes ou comentários: fora do escopo (não existem no projeto)
+- ❌ Pular o workflow: implementar sem as etapas de research, planejamento e implementação (e seus artefatos)
+- ❌ Plano sem SIs ou sem as Technical Specifications, ou `validation.md` que não fecha em `clean`
+- ❌ Passar o arquivo de 10GB pela API de forma que trave o sistema (sem estratégia de upload assíncrono/direto)
+- ❌ Não ter fila, worker e storage reais subindo no Compose
+- ❌ `tsc` com erro, lint quebrado ou suíte vermelha
+- ❌ Commit direto na `main`
+- ❌ `CLAUDE.md`/equivalente inconsistente com o código
+- ❌ Usar outra ferramenta sem portar a fundação para a convenção dela
 
 ## Estrutura do entregável
 
-Tudo dentro do fork do `mba-ia-greenfield-project`. Abaixo, apenas o que é novo/alterado:
+Tudo dentro do fork do `mba-ia-greenfield-project`. Abaixo, apenas o que é novo/alterado (os nomes de arquivo do módulo são ilustrativos — a estrutura final é decisão do seu plano):
 
 ```
 mba-ia-greenfield-project/
-├── .claude/skills/verify-phase/
-│   ├── SKILL.md                                          ← SUA SKILL
-│   └── (arquivos de referência: template, regex, pesos)
-├── _claude-sessions/
-│   └── 11-fase06-subscriptions.txt                       ← export bruto
 ├── docs/
 │   ├── decisions/
-│   │   └── technical-decisions-phase-06-subscriptions.md ← /research
+│   │   └── technical-decisions-phase-03-videos.md     ← research
 │   └── phases/
-│       ├── phase-06-subscriptions.md                     ← /plan-phase
-│       ├── phase-06-subscriptions.progress.md            ← /implement-phase
-│       └── phase-06-subscriptions.verification.md        ← /verify-phase
+│       └── phase-03-videos/                           ← pasta da fase
+│           ├── context.md                             ← plan-context
+│           ├── validation.md                          ← plan-validate (clean)
+│           ├── library-refs.md                        ← plan-resolve (se houver libs novas)
+│           ├── phase-03-videos.md                     ← plan-build (o plano)
+│           └── progress.md                            ← implement
 ├── nestjs-project/
-│   ├── CLAUDE.md                                         ← atualizado
+│   ├── CLAUDE.md (ou equivalente)                     ← atualizado
+│   ├── compose.yaml                                   ← + storage, fila, worker
 │   ├── src/
-│   │   ├── subscriptions/                                ← novo módulo (espelha auth/)
+│   │   ├── videos/                                    ← novo módulo (forma de referência: auth/)
 │   │   │   └── ...
 │   │   └── database/migrations/
-│   │       └── <timestamp>-CreateSubscriptions.ts
-│   └── test/
-│       └── subscriptions.e2e-spec.ts
-└── CLAUDE.md                                             ← atualizado
+│   │       └── <timestamp>-CreateVideos.ts
+│   └── (worker de vídeo — local conforme o seu plano)
+└── CLAUDE.md (ou equivalente)                         ← atualizado
 ```
 
 ## Repositório base
 
-`<link-do-repositorio-base-aqui>`
+https://github.com/devfullcycle/mba-ia-greenfield-project
 
-O fork do repositório base é a sua estrutura de trabalho: você não cria um repositório novo, apenas adiciona/edita os arquivos acima dentro dele. O repositório já contém as Fases 01 e 02, os módulos `auth/`, `users/` e `channels/`, as skills `research`, `plan-phase`, `implement-phase`, `generate-test-guide`, `testing-guide-nestjs-project`, `nestjs-best-practices` e `typeorm`, e o `compose.yaml` com o PostgreSQL.
+O fork é a sua estrutura de trabalho: você não cria um repositório novo, apenas adiciona/edita arquivos dentro dele. O repositório já traz as Fases 01 e 02 (backend e frontend), o workflow completo em `.claude/` (skills, sub-agents e rules), o `CLAUDE.md`, o `docs/project-plan.md` e o `compose.yaml` do backend com Postgres e Mailpit.
 
 ## Ordem de execução sugerida
 
-1. **Fork e setup.** Faça o fork, suba o backend (`docker compose -f nestjs-project/compose.yaml up -d`) e rode a suíte atual para confirmar que está verde.
-2. **Research.** Rode a `research` sobre o código e feche as decisões em aberto do escopo.
-3. **Plano.** Rode a `plan-phase` a partir das decisões. Revise contratos e SIs criticamente (1 a 2 iterações).
-4. **Implementação.** Conduza a `implement-phase` SI a SI, com testes, commitando por SI e mantendo o `progress.md`.
-5. **Skill `verify-phase`.** Crie a skill (comece testando-a com o repo ainda incompleto: a nota baixa é esperada).
-6. **Verificar e corrigir.** Rode a skill, corrija os gaps no repo e re-rode até a nota ≥ 85%.
-7. **Fundação e sessão.** Atualize os CLAUDE.md e arquive a sessão.
-8. **Revisão final.** Passe pela lista de Critérios de Aceite item a item antes do push.
+1. **Setup.** Faça o fork, suba o backend (`cd nestjs-project && docker compose up -d`, instale as dependências, rode as migrations) e confirme a suíte atual verde. Se for usar outra ferramenta, porte a fundação de IA antes de começar.
+2. **Research.** Pesquise e feche as decisões em aberto (fila, estratégia de upload, streaming, processamento). O object storage já é dado (S3/MinIO).
+3. **Planejamento.** Rode a pipeline (`context → validate → resolve → build`) até o `validation.md` fechar em `clean` e o plano ficar completo. Revise criticamente.
+4. **Implementação.** Conduza a implementação SI a SI: módulo, infra no Compose, migration, testes e `progress.md`.
+5. **Fechamento.** Garanta a Definition of Done (testes + tsc + lint), atualize o `CLAUDE.md` e revise os Critérios de Aceite item a item antes do push.
 
 ## Dicas finais
 
-- **Continuidade real, não retrabalho.** O valor do desafio é mostrar que você sabe operar o workflow do curso em uma feature nova e coerente, não reescrever o que o professor já fez. Reuse os padrões existentes (guard, filtro de exceções, repository, migrations).
-- **O plano é o contrato.** Se os SIs e contratos estiverem frouxos, a implementação e a verificação desandam. Gaste tempo no plano.
-- **A skill é um prompt.** Não tente codar lógica complexa no `SKILL.md`; descreva o procedimento e ancore com arquivos de referência (template, regex, pesos).
-- **Repositório honesto.** A nota sobe corrigindo o repo, não o relatório. O avaliador pode re-rodar a sua skill.
-- **Itere.** É normal precisar de 1 a 2 iterações no plano e 2 a 3 no ciclo verificar → corrigir → re-verificar.
+- **A Fase 03 é grande; o plano é o que segura.** Quanto melhores as decisões e o plano (SIs bem fatiados, contratos e eventos definidos), mais limpa a implementação. Gaste tempo no planejamento.
+- **Upload de 10GB é decisão de arquitetura, não de força bruta.** Pesquise a estratégia certa antes de codar; passar o arquivo inteiro pela API é o caminho errado.
+- **Infra real, testada.** Fila, worker e storage precisam subir no Compose e ser exercitados pelos testes: não simule o que dá para rodar de verdade.
+- **Continuidade, não retrabalho.** Reuse os padrões do projeto (guard, filtro de exceções, repository, migrations, rules). Você está somando uma fase, não reescrevendo o que já existe.
+- **Ferramenta é escolha sua, workflow não.** Use o Claude Code ou porte a fundação para a sua ferramenta — mas o encadeamento research → planejamento → implementação e os artefatos da fase são os mesmos.
